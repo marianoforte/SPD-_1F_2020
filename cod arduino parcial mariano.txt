@@ -1,0 +1,144 @@
+#include <LiquidCrystal.h>
+
+#define NOBOTON 0
+#define BOTON1 1
+#define BOTON2 2
+#define BOTON3 3
+#define BOTON4 4
+
+LiquidCrystal lcd(2, 3, 4, 5, 6, 7);
+
+void setup()
+{
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+}
+
+int min = -39;
+int max = 124;
+int botonAntes = NOBOTON;
+
+void loop()
+{
+  float lectura = leerTemperatura();
+
+  int botonAhora = leerBoton();
+  if (botonAhora != NOBOTON && botonAhora != botonAntes)
+  {
+    switch (botonAhora)
+    {
+      case BOTON1:
+        if (max < 124)
+        {
+          max++;
+        }
+        break;
+      case BOTON2:
+        if (max > min + 1)
+        {
+          max--;
+        }
+        break;
+      case BOTON3:
+        if (min < max - 1)
+        {
+          min++;
+        }
+        break;
+      case BOTON4:
+        if (min > -39)
+        {
+          min--;
+        }
+        break;
+    }
+  }
+
+  lcd.setCursor(0, 0);
+  if((lectura > max) || (lectura < min))
+  {
+    lcd.print("TEMP=    ");
+  }
+  else
+  {
+    lcd.print("TEMP=     ");
+  }
+
+  if((lectura > -10 && lectura < 0) || (lectura >= 10 && lectura < 100))
+  {
+    lcd.print(" ");
+  }
+  if(lectura >= 0 && lectura < 10)
+  {
+    lcd.print("   ");
+  }
+  if((lectura > max) || (lectura < min))
+  {
+    lcd.print("!");
+  }
+  lcd.print(lectura);
+
+  lcd.setCursor(0, 1);
+  lcd.print("MIN=");
+  if((min > -10 && min < 0) || (min >= 10 && min < 100))
+  {
+    lcd.print(" ");
+  }
+  if(min >= 0 && min < 10)
+  {
+    lcd.print("  ");
+  }
+  lcd.print(min);
+
+
+  lcd.setCursor(9, 1);
+  lcd.print("MAX=");
+  if((max > -10 && max < 0) || (max >= 10 && max < 100))
+  {
+    lcd.print(" ");
+  }
+  if(max >= 0 && max < 10)
+  {
+    lcd.print("  ");
+  }
+  lcd.print(max);
+
+
+  botonAntes = botonAhora;
+
+
+  Serial.println(analogRead(A0));
+
+  delay(25);
+}
+
+int leerBoton()
+{
+  int valorA0 = analogRead(A0);
+  if (valorA0 >= 0 && valorA0 <= 30)
+  {
+    return BOTON1;
+  }
+  if (valorA0 <= 370 && valorA0 >= 300)
+  {
+    return BOTON2;
+  }
+  if (valorA0 <= 450 && valorA0 >= 400)
+  {
+    return BOTON3;
+  }
+  if (valorA0 <= 495 && valorA0 >= 460)
+  {
+    return BOTON4;
+  }
+  return NOBOTON;
+}
+
+float leerTemperatura()
+{
+  int pinA1 = analogRead(A1);
+  float volts = pinA1 * 5.0;
+  volts = volts / 1024.0;
+  float temperatura = (volts - 0.5) * 100;
+  return temperatura;
+}
